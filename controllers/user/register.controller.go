@@ -9,23 +9,30 @@ import (
 
 func RegisterController(res http.ResponseWriter, username string, email string, password string) bool {
 	_, ok := controllers.ValidMailAddress(email)
+	resp := make(map[string]string)
+
+	println("elixxrades", username, email, password)
 
 	if len(username) < 3 && len(username) > 20 {
-		util.Write(res, "Not Valid Username, HTTP!\n")
+		resp["error"] = "Not Valid Username"
+		util.JsonWrite(res, resp)
 		return false
 	}
 	if !ok {
-		util.Write(res, "Not Valid Email, HTTP!\n")
+		resp["error"] = "Not Valid Email"
+		util.JsonWrite(res, resp)
 		return false
 	}
 
 	r, ok := db.FindUserByEmail(email)
 	if ok && r.Email != "" {
-		util.Write(res, "Email already using, try another email, HTTP!\n")
+		resp["error"] = "Email already using try another email."
+		util.JsonWrite(res, resp)
 		return false
 	}
 	if len(password) < 3 && len(password) > 20 {
-		util.Write(res, "Not Valid Password, HTTP!\n")
+		resp["error"] = "Not Valid Password"
+		util.JsonWrite(res, resp)
 		return false
 	}
 	return true

@@ -8,14 +8,18 @@ import (
 
 func LoginController(res http.ResponseWriter, email string, password string) bool {
 	_, ok := controllers.ValidMailAddress(email)
+	println("elixxrades", email, password)
 
+	resp := make(map[string]string)
 	if !ok {
-		util.Write(res, "Not Valid Email, HTTP!\n")
+		resp["error"] = "Not Valid Email"
+		util.JsonWrite(res, resp)
 		return false
 	}
 
 	if len(password) < 3 && len(password) > 20 {
-		util.Write(res, "Not Valid Password, HTTP!\n")
+		resp["error"] = "Not Valid Password"
+		util.JsonWrite(res, resp)
 		return false
 	}
 	return true

@@ -2,26 +2,42 @@ package user
 
 import (
 	"gapi/util"
+	"gapi/util/db"
 	"net/http"
 	"strings"
 )
 
 func RoutePost(res http.ResponseWriter, req *http.Request) {
-	util.Write(res, "Hello, HTTP!\n")
-	util.Write(res, "user, HTTP!\n")
+	headerContentType := req.Header.Get("Content-Type")
+	if headerContentType != "application/x-www-form-urlencoded" {
+		res.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+	req.ParseForm()
 
-	tokenString := req.Header.Get("Authorization")
+	res.WriteHeader(http.StatusCreated)
+	res.Header().Set("Content-Type", "application/json")
 
-	util.Info("HI", tokenString)
+	tokenString := req.Form.Get("Authorization")
 
 	tokenString = strings.Split(tokenString, " ")[1]
 	data, ok := util.ParseToken(tokenString)
-
+	resp := make(map[string]string)
 	if ok {
-		util.Write(res, data.Email+", HTTP!\n")
+		data, ok := db.FindUserByEmail(data.Email)
+		if ok {
+			resp["user"] = "active"
+			resp["email"] = data.Email
+			resp["username"] = data.Username
+			resp["id"] = data.CID
+			resp["role"] = data.Role
+		} else {
+			resp["error"] = "User doesn't found"
+		}
 	} else {
-		util.Write(res, "We not have a active user, HTTP!\n")
+		resp["error"] = "User doesn't found"
 	}
+	util.JsonWrite(res, resp)
 }
 
 func RouteGet(res http.ResponseWriter, req *http.Request) {

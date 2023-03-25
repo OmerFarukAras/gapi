@@ -8,32 +8,35 @@ import (
 )
 
 func LoginRoute(res http.ResponseWriter, req *http.Request) {
-	util.Write(res, "Hello, HTTP!\n")
-	util.Write(res, "login, HTTP!\n")
-
+	headerContentType := req.Header.Get("Content-Type")
+	if headerContentType != "application/x-www-form-urlencoded" {
+		res.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
 	req.ParseForm()
+
+	resp := make(map[string]string)
 
 	password := req.Form.Get("password")
 	email := req.Form.Get("email")
 
 	cr := user.LoginController(res, email, password)
 	if !cr {
-		util.Write(res, "Incorrect form data, HTTP!\n")
 		return
 	}
 
 	user, ok := db.FindUserByEmail(email)
 	if ok {
 		if user.Password == util.ShaHash(password) {
-			util.Write(res, "valid user, HTTP!\n")
 			token := util.CreateToken(email)
-			util.Write(res, token+", HTTP!\n")
+			resp["token"] = token
 		} else {
-			util.Write(res, "Password incorrect, HTTP!\n")
+			resp["error"] = "Password incorrect."
 		}
 	} else {
-		util.Write(res, "User doesn't exist, HTTP!\n")
+		resp["error"] = "User doesn't exist, HTTP!\n"
 	}
 
+	util.JsonWrite(res, resp)
 	util.Info("FORM DATA: ", password+" "+email)
 }

@@ -9,10 +9,17 @@ import (
 )
 
 func RegisterRoute(res http.ResponseWriter, req *http.Request) {
-	util.Write(res, "Hello, HTTP!\n")
-	util.Write(res, "register, HTTP!\n")
-
+	headerContentType := req.Header.Get("Content-Type")
+	if headerContentType != "application/x-www-form-urlencoded" {
+		res.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
 	req.ParseForm()
+
+	res.WriteHeader(http.StatusCreated)
+	res.Header().Set("Content-Type", "application/json")
+
+	resp := make(map[string]string)
 
 	username := req.Form.Get("username")
 	password := req.Form.Get("password")
@@ -20,7 +27,6 @@ func RegisterRoute(res http.ResponseWriter, req *http.Request) {
 
 	cr := user.RegisterController(res, username, email, password)
 	if !cr {
-		util.Write(res, "Incorrect form data, HTTP!\n")
 		return
 	}
 
@@ -33,6 +39,7 @@ func RegisterRoute(res http.ResponseWriter, req *http.Request) {
 
 	token := util.CreateToken(email)
 
-	util.Write(res, token+", HTTP!\n")
+	resp["token"] = token
+	util.JsonWrite(res, resp)
 	util.Info("Form DATA :", req.Form.Has("username"))
 }

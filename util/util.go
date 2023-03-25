@@ -8,6 +8,7 @@ import (
 	"gapi/models"
 	"gapi/util/db"
 	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -63,4 +64,15 @@ func PostsArrayToString(items []models.Post) (string, error) {
 	s := strings.TrimSpace("[" + buffer.String() + "]")
 
 	return s, nil
+}
+
+func JsonWrite(res Writer, data map[string]string) {
+	jsonResp, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalf("Error happened in JSON marshal. Err: %s", err)
+	}
+	_, err = res.Write(jsonResp)
+	if err != nil {
+		return
+	}
 }

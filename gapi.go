@@ -13,7 +13,7 @@ type HttpHandler struct{}
 
 func (h HttpHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	datalog := req.Method + " Request : " + req.URL.Path + " - " + req.RemoteAddr + " :"
-
+	res.Header().Set("Access-Control-Allow-Origin", "*")
 	db.AddLog(datalog)
 	util.Info(datalog, nil)
 
