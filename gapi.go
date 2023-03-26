@@ -14,6 +14,9 @@ type HttpHandler struct{}
 func (h HttpHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 	datalog := req.Method + " Request : " + req.URL.Path + " - " + req.RemoteAddr + " :"
 	res.Header().Set("Access-Control-Allow-Origin", "*")
+	res.Header().Set("Access-Control-Allow-Credentials", "true")
+	res.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+	res.Header().Set("Access-Control-Allow-Headers", "Authorization, Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
 	db.AddLog(datalog)
 	util.Info(datalog, nil)
 

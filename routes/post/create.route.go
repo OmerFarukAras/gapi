@@ -9,36 +9,48 @@ import (
 )
 
 func CreateRoute(res http.ResponseWriter, req *http.Request, user *models.User) {
-	util.Write(res, "Hello, HTTP!\n")
-	util.Write(res, "create, HTTP!\n")
+	headerContentType := req.Header.Get("Content-Type")
+	if headerContentType != "application/x-www-form-urlencoded" {
+		res.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
+	req.ParseForm()
+
+	res.WriteHeader(http.StatusCreated)
+	res.Header().Set("Content-Type", "application/json")
+
+	resp := make(map[string]string)
+
 	if user == nil {
-		util.Write(res, "We not have a active user, HTTP!\n")
+		resp["error"] = "User not exist."
+		util.JsonWrite(res, resp)
 	} else {
-		util.Write(res, user.Username+", HTTP!\n")
 		util.Info("USER ", user)
-
-		req.ParseForm()
-
 		if req.Form.Has("title") && req.Form.Has("content") {
-
 			title := req.Form.Get("title")
 			content := req.Form.Get("content")
 
 			ok := post.CreateController(res, title, content)
 			if !ok {
-				util.Write(res, "Incorrect form data, HTTP!\n")
+				//resp["error"] = "Invalid form data."
+				//util.JsonWrite(res, resp)
 				return
 			}
 
 			cr, post := db.CreatePost(title, content, user.CID)
 			if !cr {
-				util.Write(res, "DB Error in create, HTTP!\n")
+				resp["error"] = "DB Error in create, HTTP!\n"
+				util.JsonWrite(res, resp)
 				return
 			}
-			util.Write(res, "Post Created, HTTP!\n")
-			util.Write(res, "Post ID: "+post.CID+", HTTP!\n")
+			resp["post"] = post.CID
+			resp["author"] = post.Author
+			resp["createdAt"] = post.CreatedAt
+			util.JsonWrite(res, resp)
+			return
 		} else {
-			util.Write(res, "Incorrect form data, HTTP!\n")
+			resp["error"] = "Invalid form data."
+			util.JsonWrite(res, resp)
 			return
 		}
 

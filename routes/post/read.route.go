@@ -13,6 +13,11 @@ func ReadRoute(res http.ResponseWriter, req *http.Request) {
 	all := 0
 	util.Info("data", itemCount+page)
 
+	res.WriteHeader(http.StatusCreated)
+	res.Header().Set("Content-Type", "application/json")
+
+	resp := make(map[string]string)
+
 	if req.URL.Query().Has("page") {
 		page, _ = strconv.Atoi(req.URL.Query().Get("page"))
 		if page <= 0 {
@@ -30,12 +35,15 @@ func ReadRoute(res http.ResponseWriter, req *http.Request) {
 	posts, ok := db.GetAllPosts()
 
 	if !ok {
-		util.Write(res, "DB Error in read, HTTP!\n")
+		resp["error"] = "DB error"
+		util.JsonWrite(res, resp)
 		return
 	}
 	if all == 1 {
 		str, _ := util.PostsArrayToString(posts)
-		util.Write(res, str)
+		resp["data"] = str
+		util.JsonWrite(res, resp)
+		return
 	} else if all == 0 {
 
 		postsLength := len(posts)
@@ -47,13 +55,17 @@ func ReadRoute(res http.ResponseWriter, req *http.Request) {
 		end += page * 10
 
 		if start > postsLength {
-			util.Write(res, "Page error")
+			resp["error"] = "Page error"
+			util.JsonWrite(res, resp)
+			return
 		} else {
 			if end > postsLength {
 				end = postsLength
 			}
 			str, _ := util.PostsArrayToString(posts[start:end])
-			util.Write(res, str)
+			resp["data"] = str
+			util.JsonWrite(res, resp)
+			return
 		}
 	}
 }
