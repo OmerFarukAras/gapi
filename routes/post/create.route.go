@@ -14,7 +14,10 @@ func CreateRoute(res http.ResponseWriter, req *http.Request, user *models.User) 
 		res.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
-	req.ParseForm()
+	err := req.ParseForm()
+	if err != nil {
+		return
+	}
 
 	res.WriteHeader(http.StatusCreated)
 	res.Header().Set("Content-Type", "application/json")
@@ -37,15 +40,15 @@ func CreateRoute(res http.ResponseWriter, req *http.Request, user *models.User) 
 				return
 			}
 
-			cr, post := db.CreatePost(title, content, user.CID)
+			cr, postData := db.CreatePost(title, content, user.CID)
 			if !cr {
 				resp["error"] = "DB Error in create, HTTP!\n"
 				util.JsonWrite(res, resp)
 				return
 			}
-			resp["post"] = post.CID
-			resp["author"] = post.Author
-			resp["createdAt"] = post.CreatedAt
+			resp["postData"] = postData.CID
+			resp["author"] = postData.Author
+			resp["createdAt"] = postData.CreatedAt
 			util.JsonWrite(res, resp)
 			return
 		} else {

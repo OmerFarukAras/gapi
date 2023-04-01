@@ -11,8 +11,6 @@ func RegisterController(res http.ResponseWriter, username string, email string, 
 	_, ok := controllers.ValidMailAddress(email)
 	resp := make(map[string]string)
 
-	println("elixxrades", username, email, password)
-
 	if len(username) < 3 && len(username) > 20 {
 		resp["error"] = "Not Valid Username"
 		util.JsonWrite(res, resp)

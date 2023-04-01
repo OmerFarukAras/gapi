@@ -27,12 +27,8 @@ func CreatePost(title string, content string, authorID string) (bool, models.Pos
 	return true, post
 }
 
-func UpdatePost(title string, content string, ID string) (bool, *models.Post) {
+func UpdatePost(title string, content string, post *models.Post) (bool, *models.Post) {
 	driver := Database()
-	post, ok := FindPostByID(ID)
-	if !ok {
-		return false, nil
-	}
 
 	post.Title = title
 	post.Content = content
@@ -47,12 +43,9 @@ func UpdatePost(title string, content string, ID string) (bool, *models.Post) {
 	return true, post
 }
 
-func DeletePost(ID string) (bool, *models.Post) {
+func DeletePost(post *models.Post) (bool, *models.Post) {
 	driver := Database()
-	post, ok := FindPostByID(ID)
-	if !ok {
-		return false, nil
-	}
+
 	err := driver.Delete(post)
 	if err != nil {
 		return false, nil

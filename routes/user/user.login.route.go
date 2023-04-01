@@ -13,7 +13,10 @@ func LoginRoute(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
-	req.ParseForm()
+	err := req.ParseForm()
+	if err != nil {
+		return
+	}
 
 	resp := make(map[string]string)
 
@@ -25,9 +28,9 @@ func LoginRoute(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	user, ok := db.FindUserByEmail(email)
+	userData, ok := db.FindUserByEmail(email)
 	if ok {
-		if user.Password == util.ShaHash(password) {
+		if userData.Password == util.ShaHash(password) {
 			token := util.CreateToken(email)
 			resp["token"] = token
 		} else {

@@ -8,8 +8,6 @@ import (
 
 func LoginController(res http.ResponseWriter, email string, password string) bool {
 	_, ok := controllers.ValidMailAddress(email)
-	println("elixxrades", email, password)
-
 	resp := make(map[string]string)
 	if !ok {
 		resp["error"] = "Not Valid Email"

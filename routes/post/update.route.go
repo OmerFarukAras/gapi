@@ -9,15 +9,30 @@ import (
 )
 
 func UpdateRoute(res http.ResponseWriter, req *http.Request, user *models.User) {
-	util.Write(res, "Hello, HTTP!\n")
-	util.Write(res, "update, HTTP!\n")
-	if user == nil {
-		util.Write(res, "We not have a active user, HTTP!\n")
-	} else {
-		util.Write(res, user.Username+", HTTP!\n")
-		util.Info("USER ", user)
+	headerContentType := req.Header.Get("Content-Type")
+	if headerContentType != "application/x-www-form-urlencoded" {
+		res.WriteHeader(http.StatusUnsupportedMediaType)
+		return
+	}
 
-		req.ParseForm()
+	err := req.ParseForm()
+	if err != nil {
+		return
+	}
+
+	res.WriteHeader(http.StatusCreated)
+	res.Header().Set("Content-Type", "application/json")
+
+	resp := make(map[string]string)
+
+	if user == nil {
+		resp["error"] = "We not have a active user"
+	} else {
+
+		err := req.ParseForm()
+		if err != nil {
+			return
+		}
 
 		if req.Form.Has("title") && req.Form.Has("content") && req.Form.Has("id") {
 
@@ -25,23 +40,33 @@ func UpdateRoute(res http.ResponseWriter, req *http.Request, user *models.User) 
 			content := req.Form.Get("content")
 			postID := req.Form.Get("id")
 
-			ok := post.UpdateController(res, title, content)
-			if !ok {
-				util.Write(res, "Incorrect form data, HTTP!\n")
-				return
+			postData, ok := db.FindPostByID(postID)
+
+			if ok {
+				ok := post.UpdateController(res, title, content)
+				if !ok {
+					return
+				}
+				if user.CID == postData.Author {
+					cr, postData := db.UpdatePost(title, content, postData)
+					if !cr {
+						resp["error"] = "DB Error in update."
+					}
+
+					resp["message"] = "Post updated."
+					resp["post"] = postData.CID
+					resp["author"] = postData.Author
+					resp["createdAt"] = postData.CreatedAt
+				} else {
+					resp["error"] = "you do not own this post."
+				}
+			} else {
+				resp["error"] = "We dont have this post."
 			}
 
-			cr, post := db.UpdatePost(title, content, postID)
-			if !cr {
-				util.Write(res, "DB Error in update, HTTP!\n")
-				return
-			}
-			util.Write(res, "Post Updated, HTTP!\n")
-			util.Write(res, "Post ID: "+post.CID+", HTTP!\n")
 		} else {
-			util.Write(res, "Incorrect form data, HTTP!\n")
-			return
+			resp["error"] = "Incorrect form data."
 		}
-
 	}
+	util.JsonWrite(res, resp)
 }

@@ -18,7 +18,10 @@ type Writer interface {
 }
 
 func Write(w Writer, s string) {
-	io.WriteString(w, s)
+	_, err := io.WriteString(w, s)
+	if err != nil {
+		return
+	}
 }
 func ShaHash(input string) string {
 	plainText := []byte(input)

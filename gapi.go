@@ -60,5 +60,8 @@ func (h HttpHandler) ServeHTTP(res http.ResponseWriter, req *http.Request) {
 func main() {
 	handler := HttpHandler{}
 	util.Info("Server started on : 8080", nil)
-	http.ListenAndServe(":8080", handler)
+	err := http.ListenAndServe(":8080", handler)
+	if err != nil {
+		return
+	}
 }

@@ -13,7 +13,10 @@ func RoutePost(res http.ResponseWriter, req *http.Request) {
 		res.WriteHeader(http.StatusUnsupportedMediaType)
 		return
 	}
-	req.ParseForm()
+	err := req.ParseForm()
+	if err != nil {
+		return
+	}
 
 	res.WriteHeader(http.StatusCreated)
 	res.Header().Set("Content-Type", "application/json")

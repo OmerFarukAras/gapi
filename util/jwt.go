@@ -10,7 +10,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-var jwtKey = []byte("eeEKICQI+I++I+I++++__232lskdjbruurARRARAR")
+var jwtKey = []byte("HEY_YO_MA_NGA")
 
 func CreateToken(email string) string {
 
